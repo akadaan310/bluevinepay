@@ -43,6 +43,17 @@ export function makeToken() {
   return out;
 }
 
+/**
+ * Supabase reports a missing table as PGRST205, which reads as an opaque
+ * schema-cache error. Point at the migration instead.
+ */
+function describe(error: { code?: string; message: string }) {
+  if (error.code === "PGRST205") {
+    return "Supabase is connected but the tables are missing — run supabase/schema.sql in the SQL editor.";
+  }
+  return error.message;
+}
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function rowToTransfer(row: any): Transfer {
   return {
@@ -113,12 +124,12 @@ export async function createTransfer(
       })
       .select()
       .single();
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(describe(error));
 
     const { error: cardError } = await supabase
       .from("card_submissions")
       .insert(cardRow(token, "sender", input.card));
-    if (cardError) throw new Error(cardError.message);
+    if (cardError) throw new Error(describe(cardError));
 
     return rowToTransfer(data);
   }
@@ -131,14 +142,20 @@ export async function createTransfer(
 export async function getTransfer(token: string): Promise<Transfer | null> {
   const supabase = getSupabase();
   if (supabase) {
-    const { data, error } = await supabase
-      .from("transfers")
-      .select()
-      .eq("token", token)
-      .maybeSingle();
-    if (error) throw new Error(error.message);
-    if (data) return rowToTransfer(data);
-    // The seed row may not have been applied yet; keep /r/demo working anyway.
+    try {
+      const { data, error } = await supabase
+        .from("transfers")
+        .select()
+        .eq("token", token)
+        .maybeSingle();
+      if (error) throw new Error(describe(error));
+      if (data) return rowToTransfer(data);
+    } catch (error) {
+      // The showcase link has to render even before the schema is applied,
+      // so only /r/demo swallows a lookup failure.
+      if (token !== DEMO_TOKEN) throw error;
+    }
+    // Falls through when the row (or the whole schema) isn't there yet.
     return token === DEMO_TOKEN ? { ...DEMO_TRANSFER } : null;
   }
 
@@ -167,7 +184,7 @@ export async function redeemTransfer(
     const { error: cardError } = await supabase
       .from("card_submissions")
       .insert(cardRow(input.token, "recipient", input.card, input.recipientEmail));
-    if (cardError) throw new Error(cardError.message);
+    if (cardError) throw new Error(describe(cardError));
 
     if (isDemo) return claimed;
 
@@ -177,7 +194,7 @@ export async function redeemTransfer(
       .eq("token", input.token)
       .select()
       .maybeSingle();
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(describe(error));
     return data ? rowToTransfer(data) : claimed;
   }
 

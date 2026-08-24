@@ -42,8 +42,14 @@ create index if not exists card_submissions_transfer_token_idx
   on public.card_submissions (transfer_token);
 
 -- Open access for the prototype. Lock this down before anything real.
-alter table public.transfers          disable row level security;
-alter table public.card_submissions   disable row level security;
+-- With RLS off, table grants decide access; Supabase grants these by default
+-- but we state them explicitly so a publishable/anon key definitely works.
+alter table public.transfers        disable row level security;
+alter table public.card_submissions disable row level security;
+
+grant usage on schema public to anon, authenticated;
+grant select, insert, update on public.transfers        to anon, authenticated;
+grant select, insert, update on public.card_submissions to anon, authenticated;
 
 -- Seed the "Abed Kadaan sent you $600" demo link at /r/demo
 insert into public.transfers

@@ -41,11 +41,22 @@ transfer) so the whole flow works immediately.
 
    ```
    NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
-   SUPABASE_SERVICE_ROLE_KEY=<service role key>   # or the anon key
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
    ```
+
+   Any of three keys works, checked in this order:
+   `SUPABASE_SERVICE_ROLE_KEY` (server-only, bypasses RLS), then
+   `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (the current key style), then
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY` (the legacy JWT). A publishable key is
+   enough here because the migration disables RLS and grants `anon` access.
 
 4. Restart the dev server. Every transfer and every submitted card form now
    persists to your project.
+
+If the credentials are live but step 2 hasn't run, the app says so directly —
+"Supabase is connected but the tables are missing" — rather than failing
+opaquely. `/r/demo` keeps rendering from its built-in copy either way, so the
+showcase link never 404s.
 
 `src/lib/store.ts` is the single data-access layer — it talks to Supabase when
 credentials are present and to the in-memory map otherwise, so the rest of the
