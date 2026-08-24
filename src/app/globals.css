@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/* ── Bluevine Pay design tokens ───────────────────────────────────────────
+   Brand palette sourced from Bluevine's marketing site:
+     Persian Blue  #1943DC  — primary action / brand
+     Blue Zodiac   #162D5A  — deep navy, headlines & dark surfaces
+   Everything else is a supporting neutral or state colour.
+   ---------------------------------------------------------------------- */
+@theme {
+  --color-brand-50:  #eef2ff;
+  --color-brand-100: #dfe6ff;
+  --color-brand-200: #c2d0ff;
+  --color-brand-300: #94aeff;
+  --color-brand-400: #6083ff;
+  --color-brand-500: #3a5cf5;
+  --color-brand-600: #1943dc;
+  --color-brand-700: #1435b4;
+  --color-brand-800: #152f8f;
+  --color-brand-900: #162d5a;
+  --color-brand-950: #0d1c3d;
+
+  --color-navy: #162d5a;
+  --color-navy-deep: #0d1c3d;
+
+  --color-mint-100: #d8f6ec;
+  --color-mint-400: #37c99a;
+  --color-mint-600: #0f9d76;
+
+  --color-ink: #12172b;
+  --color-muted: #5b6478;
+  --color-hairline: #e3e7ef;
+  --color-canvas: #f5f7fb;
+
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Autofill in Chrome repaints the input background; keep it on-brand. */
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-ink);
+  -webkit-box-shadow: 0 0 0 1000px #fff inset;
+}
+
+@keyframes bvp-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+.bvp-rise { animation: bvp-rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
